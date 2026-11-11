@@ -1,0 +1,1056 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Catatan Proyek Rumah</title>
+<meta name="description" content="Pencatatan proyek konstruksi rumah: absensi, progress, keuangan & nota.">
+<meta name="theme-color" content="#1e293b">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231e293b'/%3E%3Cpath d='M12 32 32 14l20 18v18H12z' fill='%23f59e0b'/%3E%3Crect x='27' y='36' width='10' height='14' fill='%231e293b'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: { extend: {
+    colors: {
+      navy: { DEFAULT:'#1e293b', 950:'#0b1220', 900:'#0f172a', 800:'#1e293b', 700:'#334155', 600:'#475569' },
+      brand: { DEFAULT:'#f59e0b', 50:'#fffbeb', 100:'#fef3c7', 200:'#fde68a', 500:'#f59e0b', 600:'#d97706', 700:'#b45309' }
+    },
+    fontFamily: { sans: ['Inter','system-ui','-apple-system','Segoe UI','Roboto','sans-serif'] }
+  } }
+};
+</script>
+<style>
+  html { -webkit-tap-highlight-color: transparent; }
+  body { font-family: Inter, system-ui, sans-serif; }
+  .lbl { display:block; font-size:.8rem; font-weight:600; color:#334155; margin-bottom:.35rem; }
+  .inp { width:100%; border:1px solid #cbd5e1; border-radius:.65rem; padding:.65rem .8rem; font-size:16px; background:#fff; color:#0f172a; outline:none; transition:border-color .15s, box-shadow .15s; }
+  .inp:focus { border-color:#f59e0b; box-shadow:0 0 0 3px rgba(245,158,11,.25); }
+  textarea.inp { resize:vertical; min-height:84px; }
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:.45rem; border-radius:.65rem; font-weight:600; font-size:.875rem; padding:.6rem 1rem; transition:background .15s, transform .05s; white-space:nowrap; }
+  .btn:active { transform:scale(.98); }
+  .btn-primary { background:#f59e0b; color:#1e293b; }
+  .btn-primary:hover { background:#d97706; color:#fff; }
+  .btn-navy { background:#1e293b; color:#fff; }
+  .btn-navy:hover { background:#334155; }
+  .btn-ghost { background:#f1f5f9; color:#1e293b; }
+  .btn-ghost:hover { background:#e2e8f0; }
+  .btn-danger { background:#fee2e2; color:#b91c1c; }
+  .btn-danger:hover { background:#fecaca; }
+  .icon-btn { display:inline-flex; align-items:center; justify-content:center; width:2.25rem; height:2.25rem; border-radius:.6rem; color:#475569; }
+  .icon-btn:hover { background:#f1f5f9; color:#1e293b; }
+  .card { background:#fff; border:1px solid #e2e8f0; border-radius:1rem; box-shadow:0 1px 2px rgba(15,23,42,.04); }
+  .chip { display:inline-flex; align-items:center; gap:.35rem; padding:.4rem .8rem; border-radius:999px; font-size:.8rem; font-weight:600; border:1px solid #e2e8f0; background:#fff; color:#334155; white-space:nowrap; }
+  .chip.active { background:#1e293b; color:#fff; border-color:#1e293b; }
+  .badge { display:inline-flex; align-items:center; gap:.25rem; padding:.15rem .55rem; border-radius:999px; font-size:.7rem; font-weight:700; line-height:1.4; white-space:nowrap; }
+  .no-scrollbar::-webkit-scrollbar { display:none; } .no-scrollbar { scrollbar-width:none; }
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+  .fade-in { animation: fade .18s ease-out; } @keyframes fade { from { opacity:0; transform:translateY(6px);} to {opacity:1; transform:none;} }
+  input[type=range] { accent-color:#f59e0b; }
+  .seg input { display:none; }
+  .seg label { flex:1; text-align:center; padding:.6rem; border-radius:.55rem; font-weight:600; font-size:.875rem; cursor:pointer; color:#475569; }
+  .seg input:checked + label.in { background:#dcfce7; color:#15803d; }
+  .seg input:checked + label.out { background:#fee2e2; color:#b91c1c; }
+  #print-area { display:none; }
+  @media print {
+    @page { size: A4; margin: 14mm; }
+    body { background:#fff !important; }
+    #app, #modal, #confirm, #lightbox, #toast { display:none !important; }
+    #print-area { display:block !important; color:#0f172a; font-size:11px; }
+    #print-area table { width:100%; border-collapse:collapse; margin-bottom:14px; }
+    #print-area th, #print-area td { border:1px solid #cbd5e1; padding:4px 6px; text-align:left; vertical-align:top; }
+    #print-area th { background:#f1f5f9 !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    #print-area h2 { font-size:14px; font-weight:700; margin:16px 0 6px; border-bottom:2px solid #f59e0b; padding-bottom:3px; }
+    #print-area .num { text-align:right; white-space:nowrap; }
+    #print-area .avoid { break-inside: avoid; }
+  }
+</style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased">
+
+<div id="app" class="min-h-screen pb-24 md:pb-10">
+  <!-- Header -->
+  <header class="bg-navy text-white sticky top-0 z-30 shadow-lg">
+    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-brand flex items-center justify-center shrink-0">
+        <svg viewBox="0 0 24 24" class="w-6 h-6 text-navy" fill="currentColor"><path d="M12 3 2 11.5h3V21h5.5v-6h3v6H19v-9.5h3z"/></svg>
+      </div>
+      <div class="min-w-0 flex-1">
+        <h1 id="hdr-name" class="font-bold leading-tight truncate">Proyek Rumah</h1>
+        <p id="hdr-sub" class="text-xs text-slate-300 truncate"></p>
+      </div>
+      <button data-act="print" class="hidden sm:inline-flex btn bg-white/10 hover:bg-white/20 text-white"><span data-icon="printer"></span>Cetak Laporan</button>
+      <div class="relative">
+        <button data-act="menu" class="icon-btn text-white hover:bg-white/10 hover:text-white" aria-label="Menu"><span data-icon="dots"></span></button>
+        <div id="menu" class="hidden absolute right-0 mt-2 w-64 bg-white text-slate-700 rounded-xl shadow-2xl border border-slate-200 py-2 z-40 fade-in">
+          <button data-act="settings" class="menu-item"><span data-icon="cog"></span>Pengaturan Proyek</button>
+          <button data-act="print" class="menu-item"><span data-icon="printer"></span>Cetak / Simpan PDF</button>
+          <button data-act="csv" class="menu-item"><span data-icon="download"></span>Ekspor Keuangan (CSV/Excel)</button>
+          <div class="my-1 border-t border-slate-100"></div>
+          <button data-act="backup" class="menu-item"><span data-icon="download"></span>Backup Data (JSON)</button>
+          <button data-act="restore" class="menu-item"><span data-icon="upload"></span>Pulihkan dari Backup</button>
+          <div class="my-1 border-t border-slate-100"></div>
+          <button data-act="load-demo" class="menu-item"><span data-icon="refresh"></span>Muat Ulang Data Contoh</button>
+          <button data-act="wipe" class="menu-item text-red-600"><span data-icon="trash"></span>Hapus Semua Data</button>
+        </div>
+      </div>
+    </div>
+    <!-- Desktop tabs -->
+    <nav class="hidden md:block border-t border-white/10">
+      <div class="max-w-6xl mx-auto px-4 flex gap-1" id="tabs-desktop"></div>
+    </nav>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 pt-5">
+    <section id="tab-dashboard" data-tab="dashboard"></section>
+    <section id="tab-absensi" data-tab="absensi" class="hidden"></section>
+    <section id="tab-progress" data-tab="progress" class="hidden"></section>
+    <section id="tab-keuangan" data-tab="keuangan" class="hidden"></section>
+  </main>
+
+  <!-- Mobile FAB -->
+  <button id="fab" data-act="fab" class="md:hidden fixed right-4 bottom-24 z-30 w-14 h-14 rounded-full bg-brand text-navy shadow-xl flex items-center justify-center hidden" aria-label="Tambah"><span data-icon="plus" data-size="7"></span></button>
+
+  <!-- Mobile bottom nav -->
+  <nav class="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-slate-200 safe-bottom">
+    <div class="grid grid-cols-4" id="tabs-mobile"></div>
+  </nav>
+</div>
+
+<!-- Generic modal (form / detail) -->
+<div id="modal" class="hidden fixed inset-0 z-40">
+  <div class="absolute inset-0 bg-navy-900/60 backdrop-blur-sm" data-act="close-modal"></div>
+  <div class="absolute inset-x-0 bottom-0 sm:inset-0 sm:flex sm:items-center sm:justify-center sm:p-4 pointer-events-none">
+    <div id="modal-panel" class="pointer-events-auto bg-white w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl shadow-2xl max-h-[92vh] flex flex-col fade-in">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+        <h3 id="modal-title" class="font-bold text-navy text-lg"></h3>
+        <button data-act="close-modal" class="icon-btn" aria-label="Tutup"><span data-icon="x"></span></button>
+      </div>
+      <div id="modal-body" class="px-5 py-4 overflow-y-auto safe-bottom"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm dialog -->
+<div id="confirm" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-navy-900/60" data-act="confirm-no"></div>
+  <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-5 fade-in">
+    <div class="w-11 h-11 rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-3"><span data-icon="trash"></span></div>
+    <h4 id="confirm-title" class="font-bold text-navy text-lg mb-1">Hapus data?</h4>
+    <p id="confirm-msg" class="text-sm text-slate-600 mb-5"></p>
+    <div class="flex gap-2 justify-end">
+      <button data-act="confirm-no" class="btn btn-ghost">Batal</button>
+      <button data-act="confirm-yes" id="confirm-yes" class="btn bg-red-600 hover:bg-red-700 text-white">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox" class="hidden fixed inset-0 z-[60] bg-black/95 text-white flex flex-col">
+  <div class="flex items-center justify-between px-4 h-14 shrink-0">
+    <span id="lb-count" class="text-sm text-slate-300"></span>
+    <div class="flex items-center gap-1">
+      <div id="lb-actions" class="flex gap-1"></div>
+      <button data-act="lb-close" class="icon-btn text-white hover:bg-white/10 hover:text-white" aria-label="Tutup"><span data-icon="x"></span></button>
+    </div>
+  </div>
+  <div class="relative flex-1 min-h-0 flex items-center justify-center px-2" id="lb-stage">
+    <button data-act="lb-prev" id="lb-prev" class="absolute left-2 sm:left-4 z-10 w-11 h-11 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center" aria-label="Sebelumnya"><span data-icon="chev-left"></span></button>
+    <img id="lb-img" class="max-h-full max-w-full object-contain select-none rounded" alt="">
+    <button data-act="lb-next" id="lb-next" class="absolute right-2 sm:right-4 z-10 w-11 h-11 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center" aria-label="Berikutnya"><span data-icon="chev-right"></span></button>
+  </div>
+  <div id="lb-caption" class="shrink-0 px-5 py-4 text-sm max-w-3xl mx-auto w-full safe-bottom"></div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="fixed left-1/2 -translate-x-1/2 bottom-24 md:bottom-8 z-[70] hidden"></div>
+
+<input type="file" id="restore-input" accept="application/json,.json" class="hidden">
+<div id="print-area"></div>
+
+<script>
+/* =========================================================
+   Konstanta & util
+   ========================================================= */
+const LS_KEY = 'proyekRumah_v1';
+const TAHAP = [
+  { key:'Pembersihan Lahan',  w:5,  art:'lahan',     color:'bg-lime-100 text-lime-800',     bar:'#84cc16' },
+  { key:'Fondasi',            w:15, art:'fondasi',   color:'bg-stone-200 text-stone-800',   bar:'#78716c' },
+  { key:'Struktur Dinding',   w:25, art:'dinding',   color:'bg-orange-100 text-orange-800', bar:'#ea580c' },
+  { key:'Atap',               w:20, art:'atap',      color:'bg-sky-100 text-sky-800',       bar:'#0284c7' },
+  { key:'Plambing & Listrik', w:15, art:'plambing',  color:'bg-violet-100 text-violet-800', bar:'#7c3aed' },
+  { key:'Finishing',          w:20, art:'finishing', color:'bg-emerald-100 text-emerald-800',bar:'#059669' },
+];
+const KAT_OUT = ['Material','Upah Borongan/Tukang','Alat Proyek','Operasional/Lain-lain'];
+const KAT_IN  = ['Dana Pemilik','Pinjaman/KPR','Lainnya'];
+const KAT_COLOR = {
+  'Material':'bg-amber-100 text-amber-800', 'Upah Borongan/Tukang':'bg-blue-100 text-blue-800',
+  'Alat Proyek':'bg-purple-100 text-purple-800', 'Operasional/Lain-lain':'bg-slate-200 text-slate-700',
+  'Dana Pemilik':'bg-green-100 text-green-800', 'Pinjaman/KPR':'bg-teal-100 text-teal-800', 'Lainnya':'bg-slate-200 text-slate-700'
+};
+const KAT_BAR = { 'Material':'#f59e0b','Upah Borongan/Tukang':'#3b82f6','Alat Proyek':'#a855f7','Operasional/Lain-lain':'#64748b' };
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const rp = n => 'Rp ' + Math.round(n || 0).toLocaleString('id-ID');
+const rpSigned = n => (n < 0 ? '− ' : '') + rp(Math.abs(n));
+const pad = n => String(n).padStart(2, '0');
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const today = () => ymd(new Date());
+const daysAgo = n => { const d = new Date(); d.setDate(d.getDate() - n); return ymd(d); };
+const parseD = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); };
+const fmtD = (s, opt = { day:'numeric', month:'short', year:'numeric' }) => s ? parseD(s).toLocaleDateString('id-ID', opt) : '-';
+const fmtDLong = s => fmtD(s, { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+const byDateDesc = (a, b) => (b.date || '').localeCompare(a.date || '') || (b.createdAt || 0) - (a.createdAt || 0);
+const tahapOf = k => TAHAP.find(t => t.key === k) || TAHAP[0];
+
+/* ---------- Ikon ---------- */
+const ICONS = {
+  home:'<path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
+  users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14.5c2.6.2 4.4 1.9 5 4.5"/>',
+  camera:'<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+  wallet:'<path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 7V6a2 2 0 0 1 2-2h11v3"/><circle cx="16.5" cy="13.5" r="1.2"/>',
+  printer:'<path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>', x:'<path d="M6 6l12 12M18 6 6 18"/>',
+  trash:'<path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/>',
+  eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
+  cog:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+  dots:'<circle cx="12" cy="5" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="12" cy="19" r="1.3"/>',
+  download:'<path d="M12 4v11"/><path d="M7 10l5 5 5-5"/><path d="M4 20h16"/>',
+  upload:'<path d="M12 16V5"/><path d="M7 10l5-5 5 5"/><path d="M4 20h16"/>',
+  refresh:'<path d="M20 11a8 8 0 0 0-14.3-4.9L4 8"/><path d="M4 4v4h4"/><path d="M4 13a8 8 0 0 0 14.3 4.9L20 16"/><path d="M20 20v-4h-4"/>',
+  'chev-left':'<path d="M15 5l-7 7 7 7"/>', 'chev-right':'<path d="M9 5l7 7-7 7"/>',
+  receipt:'<path d="M6 3h12v18l-2-1.5L14 21l-2-1.5L10 21l-2-1.5L6 21z"/><path d="M9 8h6M9 12h6M9 16h3"/>',
+  image:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/>',
+  arrowUp:'<path d="M12 19V5M6 11l6-6 6 6"/>', arrowDown:'<path d="M12 5v14M6 13l6 6 6-6"/>',
+  chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>', calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  helmet:'<path d="M3 17h18"/><path d="M5 17a7 7 0 0 1 14 0"/><path d="M12 6v5"/>',
+};
+const icon = (n, size = 5, extra = '') => `<svg viewBox="0 0 24 24" class="w-${size} h-${size} shrink-0 ${extra}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n] || ''}</svg>`;
+function hydrateIcons(root = document) {
+  root.querySelectorAll('[data-icon]').forEach(el => { el.outerHTML = icon(el.dataset.icon, el.dataset.size || 5); });
+}
+
+/* =========================================================
+   Foto contoh (SVG ilustrasi) untuk mock data
+   ========================================================= */
+const svgCache = {};
+function mockSvg(kind, t1 = '', t2 = '') {
+  const key = kind + '|' + t1 + '|' + t2;
+  if (svgCache[key]) return svgCache[key];
+  const x = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  let art = '', label = '', sky = '#bae6fd', ground = '#a3a07a';
+  const house = (wallTop, color = '#d6d3d1') => `<rect x='220' y='${wallTop}' width='360' height='${440 - wallTop}' fill='${color}'/>`;
+  if (kind === 'lahan') {
+    label = 'Pembersihan Lahan';
+    art = `<ellipse cx='560' cy='440' rx='190' ry='45' fill='#92400e'/>` +
+      [90,180,700].map(cx => `<rect x='${cx-8}' y='360' width='16' height='80' fill='#78350f'/><circle cx='${cx}' cy='340' r='55' fill='#4d7c0f'/>`).join('') +
+      `<rect x='330' y='370' width='120' height='50' rx='8' fill='#f59e0b'/><rect x='420' y='340' width='40' height='40' fill='#1e293b'/><path d='M450 360 L530 300 L560 330' stroke='#f59e0b' stroke-width='14' fill='none'/><circle cx='350' cy='425' r='16' fill='#1e293b'/><circle cx='430' cy='425' r='16' fill='#1e293b'/>` +
+      [250,290,610,650].map(px => `<rect x='${px}' y='395' width='6' height='45' fill='#fef3c7'/>`).join('');
+  } else if (kind === 'fondasi') {
+    label = 'Fondasi'; ground = '#a8a29e';
+    art = `<rect x='80' y='430' width='640' height='70' fill='#57534e'/>` +
+      Array.from({length: 16}, (_, i) => `<rect x='${90 + i*39}' y='${435 + (i%2)*12}' width='34' height='24' rx='6' fill='#d6d3d1'/>`).join('') +
+      Array.from({length: 9}, (_, i) => `<rect x='${110 + i*72}' y='330' width='7' height='110' fill='#9a3412'/>`).join('') +
+      `<rect x='100' y='350' width='600' height='5' fill='#9a3412'/><rect x='100' y='390' width='600' height='5' fill='#9a3412'/>`;
+  } else if (kind === 'dinding') {
+    label = 'Struktur Dinding';
+    let bricks = '';
+    for (let r = 0; r < 9; r++) for (let c = 0; c < 10; c++) {
+      if (r > 6 && c > 6) continue;
+      bricks += `<rect x='${170 + c*48 + (r%2)*24}' y='${410 - r*26}' width='44' height='22' fill='${(r+c)%3 ? '#c2410c' : '#ea580c'}'/>`;
+    }
+    art = `<rect x='160' y='190' width='16' height='250' fill='#9ca3af'/><rect x='640' y='190' width='16' height='250' fill='#9ca3af'/><rect x='160' y='180' width='496' height='14' fill='#9ca3af'/>` + bricks +
+      `<rect x='380' y='300' width='80' height='140' fill='#1e293b' opacity='.85'/>`;
+  } else if (kind === 'atap') {
+    label = 'Atap';
+    art = house(250) + `<rect x='290' y='310' width='70' height='60' fill='#475569'/><rect x='440' y='310' width='70' height='60' fill='#475569'/>` +
+      `<path d='M190 255 L400 110 L610 255 Z' fill='none' stroke='#64748b' stroke-width='10'/><path d='M400 110 V255 M295 182 L330 255 M505 182 L470 255 M295 182 L400 255 L505 182' stroke='#64748b' stroke-width='6' fill='none'/>` +
+      `<path d='M190 255 L400 110 L420 124 L215 262 Z' fill='#0369a1'/>`;
+  } else if (kind === 'plambing') {
+    label = 'Plambing & Listrik';
+    art = house(170, '#e7e5e4') + `<path d='M260 440 V230 H360' stroke='#e2e8f0' stroke-width='18' fill='none'/><path d='M260 440 V230 H360' stroke='#94a3b8' stroke-width='12' fill='none'/>` +
+      `<path d='M540 440 V260 H460 V200' stroke='#f97316' stroke-width='8' fill='none'/><path d='M500 440 V320 H430' stroke='#1e293b' stroke-width='6' fill='none'/>` +
+      `<rect x='415' y='190' width='30' height='30' rx='4' fill='#f8fafc' stroke='#1e293b' stroke-width='4'/><circle cx='430' cy='320' r='12' fill='#f59e0b'/>`;
+  } else if (kind === 'finishing') {
+    label = 'Finishing';
+    art = house(250, '#fde68a') + `<path d='M190 255 L400 110 L610 255 Z' fill='#b91c1c'/><rect x='370' y='340' width='60' height='100' fill='#78350f'/>` +
+      `<rect x='260' y='300' width='70' height='60' fill='#7dd3fc' stroke='#fff' stroke-width='6'/><rect x='470' y='300' width='70' height='60' fill='#7dd3fc' stroke='#fff' stroke-width='6'/>` +
+      `<circle cx='130' cy='380' r='40' fill='#16a34a'/><circle cx='680' cy='390' r='35' fill='#16a34a'/>`;
+  } else if (kind === 'team') {
+    label = t1 || 'Absensi Tim'; sky = '#fde68a';
+    const ppl = [[150,'#1d4ed8'],[260,'#b45309'],[370,'#15803d'],[480,'#1d4ed8'],[590,'#7c3aed']];
+    art = house(220, '#d6d3d1') + ppl.map(([cx, c], i) => {
+      const y = i % 2 ? 330 : 320;
+      return `<rect x='${cx-38}' y='${y+40}' width='76' height='120' rx='30' fill='${c}'/><circle cx='${cx}' cy='${y+10}' r='30' fill='#fcd34d' opacity='.0'/><circle cx='${cx}' cy='${y+12}' r='28' fill='#e7b98f'/><path d='M${cx-34} ${y+2} a34 30 0 0 1 68 0 z' fill='#f59e0b'/><rect x='${cx-40}' y='${y}' width='80' height='7' rx='3' fill='#d97706'/>`;
+    }).join('');
+  } else if (kind === 'nota') {
+    sky = '#e2e8f0'; ground = '#e2e8f0';
+    const lines = Array.from({length: 7}, (_, i) => `<rect x='260' y='${200 + i*34}' width='${150 + (i*37)%110}' height='10' rx='5' fill='#cbd5e1'/><rect x='480' y='${200 + i*34}' width='60' height='10' rx='5' fill='#cbd5e1'/>`).join('');
+    art = `<rect x='225' y='40' width='350' height='520' fill='#fff' stroke='#cbd5e1' stroke-width='2'/>` +
+      `<text x='400' y='100' text-anchor='middle' font-family='Arial' font-size='26' font-weight='700' fill='#1e293b'>${x(t1 || 'NOTA')}</text>` +
+      `<text x='400' y='132' text-anchor='middle' font-family='Arial' font-size='15' fill='#64748b'>NOTA / KWITANSI</text><rect x='255' y='160' width='290' height='2' fill='#1e293b'/>` + lines +
+      `<rect x='255' y='450' width='290' height='2' fill='#1e293b'/><text x='260' y='490' font-family='Arial' font-size='20' font-weight='700' fill='#1e293b'>TOTAL</text>` +
+      `<text x='540' y='490' text-anchor='end' font-family='Arial' font-size='20' font-weight='700' fill='#1e293b'>${x(t2)}</text>` +
+      `<circle cx='480' cy='525' r='26' fill='none' stroke='#dc2626' stroke-width='3' opacity='.7'/><text x='480' y='531' text-anchor='middle' font-family='Arial' font-size='13' font-weight='700' fill='#dc2626' opacity='.8'>LUNAS</text>`;
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 600'><rect width='800' height='600' fill='#e2e8f0'/>${art}<text x='786' y='588' text-anchor='end' font-family='Arial' font-size='14' fill='#94a3b8'>contoh</text></svg>`;
+    return svgCache[key] = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  }
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 600'><defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='${sky}'/><stop offset='1' stop-color='#fff7ed'/></linearGradient></defs><rect width='800' height='600' fill='url(#g)'/><rect y='440' width='800' height='160' fill='${ground}'/>${art}<rect y='536' width='800' height='64' fill='rgba(15,23,42,.78)'/><text x='24' y='577' font-family='Arial' font-size='28' font-weight='700' fill='#fff'>${x(label)}</text><text x='776' y='576' text-anchor='end' font-family='Arial' font-size='18' font-weight='700' fill='#f59e0b'>FOTO CONTOH</text></svg>`;
+  return svgCache[key] = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+}
+
+/* =========================================================
+   Penyimpanan: data -> localStorage, foto -> IndexedDB
+   (foto terlalu besar untuk kuota localStorage ±5 MB)
+   ========================================================= */
+const PhotoDB = {
+  db: null,
+  open() {
+    return new Promise(res => {
+      try {
+        const r = indexedDB.open('proyekRumah_foto', 1);
+        r.onupgradeneeded = () => r.result.createObjectStore('photos');
+        r.onsuccess = () => { this.db = r.result; res(true); };
+        r.onerror = () => res(false);
+      } catch { res(false); }
+    });
+  },
+  tx(mode, fn) {
+    return new Promise((res, rej) => {
+      const t = this.db.transaction('photos', mode); const st = t.objectStore('photos');
+      const out = fn(st); t.oncomplete = () => res(out && out.result !== undefined ? out.result : out); t.onerror = () => rej(t.error);
+    });
+  },
+  put(k, v) { return this.tx('readwrite', st => { st.put(v, k); }); },
+  del(k) { return this.tx('readwrite', st => { st.delete(k); }); },
+  clear() { return this.tx('readwrite', st => { st.clear(); }); },
+  all() {
+    return new Promise((res, rej) => {
+      const out = {}; const req = this.db.transaction('photos').objectStore('photos').openCursor();
+      req.onsuccess = () => { const c = req.result; if (c) { out[c.key] = c.value; c.continue(); } else res(out); };
+      req.onerror = () => rej(req.error);
+    });
+  }
+};
+const photoCache = {};
+
+function photoSrc(ref) {
+  if (!ref) return '';
+  if (ref.startsWith('mock:')) { const [kind, a, b] = ref.slice(5).split('|'); return mockSvg(kind, a, b); }
+  if (ref.startsWith('idb:')) return photoCache[ref.slice(4)] || '';
+  return ref; // data URL inline (fallback)
+}
+async function storePhoto(dataUrl) {
+  if (PhotoDB.db) {
+    const id = uid();
+    try { await PhotoDB.put(id, dataUrl); photoCache[id] = dataUrl; return 'idb:' + id; } catch (e) { console.warn(e); }
+  }
+  return dataUrl;
+}
+async function removePhoto(ref) {
+  if (ref && ref.startsWith('idb:') && PhotoDB.db) { const id = ref.slice(4); delete photoCache[id]; try { await PhotoDB.del(id); } catch {} }
+}
+function compressImage(file, max = 1280, q = 0.72) {
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file); const img = new Image();
+    img.onload = () => {
+      const s = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement('canvas'); c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+      const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height); ctx.drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url); res(c.toDataURL('image/jpeg', q));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('Format gambar tidak didukung')); };
+    img.src = url;
+  });
+}
+
+let state;
+function save() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(state)); return true; }
+  catch (e) { toast('Penyimpanan penuh! Lakukan backup lalu hapus sebagian foto.', 'error'); return false; }
+}
+function load() {
+  try { const s = JSON.parse(localStorage.getItem(LS_KEY)); if (s && s.settings) return s; } catch {}
+  return null;
+}
+
+/* =========================================================
+   Mock data
+   ========================================================= */
+function buildMock() {
+  const START = 75; const D = d => daysAgo(START - d); let t = Date.now() - 1e8; const ct = () => (t += 1000);
+  const settings = { name:'Rumah Tinggal Keluarga Santoso', owner:'Bpk. Budi Santoso', location:'Jl. Melati No. 12, Sleman, Yogyakarta',
+    mandor:'Pak Darto', budget:450000000, startDate:D(0), endDate:daysAgo(START - 210), isDemo:true };
+  const notes = ['Pasang bata dinding kamar belakang','Cor kolom praktis lantai 1','Pasang kusen pintu & jendela depan','Lanjut bata dinding dapur',
+    'Plester dinding ruang tamu sisi timur','Pasang ring balk sisi utara','Bobok dinding jalur pipa & listrik','Penarikan kabel listrik kamar 1–2',
+    'Pasang rangka atap baja ringan sisi depan','Lanjut rangka atap sisi belakang','Pasang reng & persiapan genteng','Pasang genteng metal sisi depan',
+    'Lanjut genteng & nok','Instalasi pipa air bersih kamar mandi'];
+  const attendance = []; let n = 0;
+  for (let i = 15; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i); if (d.getDay() === 0) continue;
+    attendance.push({ id:uid(), date:ymd(d), mandor:'Pak Darto', workers:[5,6,6,7,5,6,4,7][n % 8], notes:notes[n % notes.length], photo:'mock:team|Absensi ' + fmtD(ymd(d), {day:'numeric', month:'short'}), createdAt:ct() });
+    n++;
+  }
+  const progress = [
+    [1,'Pembersihan Lahan',100,'Lahan dibersihkan dari semak & sisa bangunan lama, pemasangan bowplank selesai.'],
+    [9,'Fondasi',40,'Galian fondasi selesai, pemasangan batu kali dimulai dari sisi timur.'],
+    [22,'Fondasi',100,'Fondasi batu kali & sloof selesai dicor, siap lanjut struktur dinding.'],
+    [36,'Struktur Dinding',30,'Pemasangan bata merah ±30%, kolom praktis lantai 1 mulai dicor.'],
+    [58,'Struktur Dinding',65,'Dinding kamar & ruang tamu terpasang, ring balk sisi utara selesai.'],
+    [61,'Plambing & Listrik',15,'Jalur pipa air bersih & kabel listrik ditanam di dinding (bobokan).'],
+    [70,'Atap',20,'Rangka atap baja ringan sisi depan terpasang.'],
+  ].map(([d, cat, pct, desc]) => ({ id:uid(), date:D(d), category:cat, percent:pct, desc, photo:'mock:' + tahapOf(cat).art, createdAt:ct() }));
+  const nota = (toko, amt) => `mock:nota|${toko}|${rp(amt)}`;
+  const fin = [
+    [0,'in','Dana Pemilik',150000000,'Bpk. Budi Santoso (Transfer BCA)','Dana tahap 1 – persiapan & struktur bawah',false],
+    [1,'out','Alat Proyek',3500000,'CV Karya Teknik','Sewa alat & ekskavator mini pembersihan lahan',true],
+    [2,'out','Upah Borongan/Tukang',4200000,'Pak Darto (Mandor)','Upah pembersihan lahan & pemasangan bowplank',true],
+    [6,'out','Material',18750000,'UD Sumber Batu','Batu kali 12 truk & pasir 6 truk',true],
+    [8,'out','Material',22400000,'TB Sinar Jaya','Semen 180 sak, besi beton Ø10 & Ø12',true],
+    [14,'out','Upah Borongan/Tukang',12600000,'Pak Darto (Mandor)','Upah mingguan tukang minggu 1–2',true],
+    [21,'out','Upah Borongan/Tukang',9800000,'Pak Darto (Mandor)','Upah mingguan tukang minggu 3',false],
+    [25,'out','Material',31200000,'TB Sinar Jaya','Bata merah 15.000 bh & semen 120 sak',true],
+    [30,'out','Operasional/Lain-lain',1250000,'Warung Bu Siti','Konsumsi tukang & air kerja',false],
+    [40,'in','Pinjaman/KPR',100000000,'Bank BTN (Pencairan termin 1)','Dana tahap 2 – struktur atas & atap',false],
+    [42,'out','Material',27900000,'TB Sinar Jaya','Besi kolom & ring balk, papan bekisting',true],
+    [45,'out','Upah Borongan/Tukang',14000000,'Pak Darto (Mandor)','Upah borongan dinding tahap 1',true],
+    [55,'out','Material',16500000,'PT Baja Ringan Prima','Rangka atap baja ringan & reng',true],
+    [60,'out','Material',6850000,'Toko Listrik Terang','Pipa PVC, kabel NYM, fitting & stop kontak',true],
+    [62,'out','Upah Borongan/Tukang',13300000,'Pak Darto (Mandor)','Upah mingguan tukang minggu 8–9',true],
+    [68,'out','Alat Proyek',2400000,'CV Karya Teknik','Sewa scaffolding 1 bulan',false],
+    [72,'out','Operasional/Lain-lain',850000,'SPBU & Warung','Bensin genset & konsumsi',false],
+    [74,'out','Material',9450000,'TB Sinar Jaya','Genteng metal pasir 120 lembar & sekrup',true],
+  ].map(([d, type, category, amount, party, desc, hasNota]) => ({ id:uid(), date:D(d), type, category, amount, party, desc,
+    photo: hasNota ? nota(party.replace(/ \(.*\)/, ''), amount) : null, createdAt:ct() }));
+  return { settings, attendance, progress, finance: fin };
+}
+function emptyState() {
+  return { settings:{ name:'Proyek Rumah Saya', owner:'', location:'', mandor:'', budget:0, startDate:today(), endDate:'', isDemo:false }, attendance:[], progress:[], finance:[] };
+}
+
+/* =========================================================
+   Perhitungan
+   ========================================================= */
+function totals() {
+  let masuk = 0, keluar = 0; const perKat = {};
+  for (const f of state.finance) {
+    if (f.type === 'in') masuk += +f.amount || 0;
+    else { keluar += +f.amount || 0; perKat[f.category] = (perKat[f.category] || 0) + (+f.amount || 0); }
+  }
+  return { masuk, keluar, saldo: masuk - keluar, perKat };
+}
+function tahapProgress() {
+  const latest = {};
+  for (const p of [...state.progress].sort(byDateDesc)) if (!(p.category in latest)) latest[p.category] = +p.percent || 0;
+  const list = TAHAP.map(t => ({ ...t, pct: latest[t.key] ?? 0 }));
+  const overall = list.reduce((s, t) => s + t.w * t.pct / 100, 0) / TAHAP.reduce((s, t) => s + t.w, 0) * 100;
+  return { list, overall };
+}
+
+/* =========================================================
+   UI: toast, modal, confirm, lightbox
+   ========================================================= */
+let toastTimer;
+function toast(msg, type = 'ok') {
+  const el = $('#toast');
+  el.innerHTML = `<div class="fade-in flex items-center gap-2 px-4 py-3 rounded-xl shadow-2xl text-sm font-semibold ${type === 'error' ? 'bg-red-600 text-white' : 'bg-navy text-white'}">${type === 'error' ? '⚠️' : '<span class="text-brand">✓</span>'} ${esc(msg)}</div>`;
+  el.classList.remove('hidden'); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.add('hidden'), 2800);
+}
+function openModal(title, html, wide = false) {
+  $('#modal-title').textContent = title; $('#modal-body').innerHTML = html;
+  $('#modal-panel').classList.toggle('sm:max-w-2xl', wide); $('#modal-panel').classList.toggle('sm:max-w-lg', !wide);
+  $('#modal').classList.remove('hidden'); document.body.style.overflow = 'hidden'; hydrateIcons($('#modal-body'));
+}
+function closeModal() { $('#modal').classList.add('hidden'); document.body.style.overflow = ''; }
+let confirmCb = null;
+function confirmDialog(title, msg, cb, yesLabel = 'Hapus') {
+  $('#confirm-title').textContent = title; $('#confirm-msg').textContent = msg; $('#confirm-yes').textContent = yesLabel;
+  confirmCb = cb; $('#confirm').classList.remove('hidden');
+}
+const LB = { items: [], i: 0 };
+function openLightbox(items, i = 0) { LB.items = items; LB.i = i; $('#lightbox').classList.remove('hidden'); document.body.style.overflow = 'hidden'; renderLightbox(); }
+function closeLightbox() { $('#lightbox').classList.add('hidden'); if ($('#modal').classList.contains('hidden')) document.body.style.overflow = ''; }
+function renderLightbox() {
+  const it = LB.items[LB.i]; if (!it) return closeLightbox();
+  $('#lb-img').src = it.src; $('#lb-count').textContent = LB.items.length > 1 ? `${LB.i + 1} / ${LB.items.length}` : '';
+  $('#lb-caption').innerHTML = it.caption || '';
+  $('#lb-prev').classList.toggle('hidden', LB.items.length < 2); $('#lb-next').classList.toggle('hidden', LB.items.length < 2);
+  $('#lb-actions').innerHTML = it.progressId ? `<button data-act="edit-progress" data-id="${it.progressId}" class="icon-btn text-white hover:bg-white/10 hover:text-white" title="Edit">${icon('edit')}</button><button data-act="del-progress" data-id="${it.progressId}" class="icon-btn text-white hover:bg-white/10 hover:text-red-400" title="Hapus">${icon('trash')}</button>` : '';
+}
+function lbStep(d) { if (LB.items.length < 2) return; LB.i = (LB.i + d + LB.items.length) % LB.items.length; renderLightbox(); }
+
+/* =========================================================
+   Navigasi tab
+   ========================================================= */
+const TABS = [
+  { id:'dashboard', label:'Dashboard', short:'Beranda', icon:'home' },
+  { id:'absensi',   label:'Absensi',   short:'Absensi', icon:'users' },
+  { id:'progress',  label:'Progress',  short:'Progress', icon:'camera' },
+  { id:'keuangan',  label:'Keuangan & Nota', short:'Keuangan', icon:'wallet' },
+];
+let currentTab = 'dashboard';
+function showTab(id) {
+  if (!TABS.some(t => t.id === id)) id = 'dashboard';
+  currentTab = id;
+  document.querySelectorAll('main > section').forEach(s => s.classList.toggle('hidden', s.dataset.tab !== id));
+  $('#tabs-desktop').innerHTML = TABS.map(t => `<button data-act="tab" data-id="${t.id}" class="flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-[3px] transition ${t.id === id ? 'border-brand text-white' : 'border-transparent text-slate-400 hover:text-white'}">${icon(t.icon, 4)}${t.label}</button>`).join('');
+  $('#tabs-mobile').innerHTML = TABS.map(t => `<button data-act="tab" data-id="${t.id}" class="flex flex-col items-center gap-0.5 py-2.5 text-[11px] font-semibold ${t.id === id ? 'text-navy' : 'text-slate-400'}"><span class="${t.id === id ? 'bg-brand-100 text-brand-700' : ''} px-4 py-1 rounded-full">${icon(t.icon)}</span>${t.short}</button>`).join('');
+  $('#fab').classList.toggle('hidden', id === 'dashboard');
+  if (location.hash !== '#' + id) history.replaceState(null, '', '#' + id);
+  window.scrollTo({ top: 0 });
+}
+
+/* =========================================================
+   Render: komponen kecil
+   ========================================================= */
+const katBadge = k => `<span class="badge ${KAT_COLOR[k] || 'bg-slate-200 text-slate-700'}">${esc(k)}</span>`;
+const typeBadge = t => t === 'in' ? `<span class="badge bg-green-100 text-green-700">${icon('arrowDown', 3)}Pemasukan</span>` : `<span class="badge bg-red-100 text-red-700">${icon('arrowUp', 3)}Pengeluaran</span>`;
+const tahapBadge = k => `<span class="badge ${tahapOf(k).color}">${esc(k)}</span>`;
+function thumb(ref, act, id, size = 'w-14 h-14', emptyLabel = 'Tanpa foto') {
+  const src = photoSrc(ref);
+  if (!src) return `<div class="${size} rounded-lg bg-slate-100 border border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-400 text-[9px] text-center leading-tight shrink-0">${icon('image', 4)}${emptyLabel}</div>`;
+  return `<button data-act="${act}" data-id="${id}" class="${size} rounded-lg overflow-hidden bg-slate-200 shrink-0 ring-1 ring-slate-200 hover:ring-2 hover:ring-brand transition"><img src="${src}" class="w-full h-full object-cover" loading="lazy" alt=""></button>`;
+}
+const emptyBox = (ic, title, sub, act, btn) => `<div class="card p-10 text-center"><div class="w-14 h-14 mx-auto rounded-2xl bg-brand-100 text-brand-700 flex items-center justify-center mb-3">${icon(ic, 7)}</div><p class="font-bold text-navy">${title}</p><p class="text-sm text-slate-500 mt-1 mb-4">${sub}</p><button data-act="${act}" class="btn btn-primary">${icon('plus', 4)}${btn}</button></div>`;
+const sectionHead = (title, sub, act, btn) => `<div class="flex items-end justify-between gap-3 mb-4"><div><h2 class="text-xl sm:text-2xl font-extrabold text-navy">${title}</h2><p class="text-sm text-slate-500">${sub}</p></div><button data-act="${act}" class="btn btn-primary hidden md:inline-flex">${icon('plus', 4)}${btn}</button></div>`;
+
+/* =========================================================
+   Render: Dashboard
+   ========================================================= */
+function renderHeader() {
+  const s = state.settings;
+  $('#hdr-name').textContent = s.name || 'Proyek Rumah';
+  $('#hdr-sub').textContent = [s.location, s.owner].filter(Boolean).join(' • ') || 'Sistem Pencatatan Proyek Konstruksi';
+  document.title = (s.name || 'Proyek Rumah') + ' – Catatan Proyek';
+}
+function statCard(label, value, sub, ic, accent, extra = '') {
+  return `<div class="card p-4 sm:p-5 relative overflow-hidden">
+    <div class="flex items-start justify-between gap-2"><p class="text-xs sm:text-sm font-semibold text-slate-500">${label}</p><span class="w-9 h-9 rounded-xl flex items-center justify-center ${accent}">${icon(ic)}</span></div>
+    <p class="mt-2 text-[15px] min-[400px]:text-lg sm:text-2xl font-extrabold text-navy tracking-tight whitespace-nowrap">${value}</p>
+    <p class="text-[11px] sm:text-xs text-slate-500 mt-1">${sub}</p>${extra}</div>`;
+}
+function renderDashboard() {
+  const s = state.settings, T = totals(), P = tahapProgress();
+  const pctBudget = s.budget ? T.keluar / s.budget * 100 : 0;
+  const todayAtt = state.attendance.filter(a => a.date === today()).sort(byDateDesc);
+  const lastOut = state.finance.filter(f => f.type === 'out').sort(byDateDesc).slice(0, 5);
+  const lastProg = [...state.progress].sort(byDateDesc)[0];
+  const katMax = Math.max(1, ...KAT_OUT.map(k => T.perKat[k] || 0));
+  const durasi = s.startDate ? Math.max(0, Math.round((new Date() - parseD(s.startDate)) / 864e5)) : 0;
+  const sisaHari = s.endDate ? Math.round((parseD(s.endDate) - new Date()) / 864e5) : null;
+
+  $('#tab-dashboard').innerHTML = `
+  ${s.isDemo ? `<div class="mb-4 rounded-xl border border-brand-200 bg-brand-50 p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+      <p class="text-sm text-brand-700 flex-1"><b>Anda sedang melihat data contoh.</b> Silakan coba semua fitur. Jika sudah siap, kosongkan data untuk mulai mencatat proyek Anda sendiri.</p>
+      <button data-act="start-fresh" class="btn btn-navy">Mulai Proyek Saya</button></div>` : ''}
+  <div class="flex items-end justify-between gap-3 mb-4">
+    <div><p class="text-sm text-slate-500">${fmtDLong(today())}</p><h2 class="text-xl sm:text-2xl font-extrabold text-navy">Ringkasan Proyek</h2></div>
+    <button data-act="settings" class="btn btn-ghost text-xs">${icon('cog', 4)}<span class="hidden sm:inline">Pengaturan</span></button>
+  </div>
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+    ${statCard('Total Dana Masuk', rp(T.masuk), s.budget ? `Anggaran ${rp(s.budget)}` : 'Atur anggaran di Pengaturan', 'arrowDown', 'bg-green-100 text-green-700')}
+    ${statCard('Total Pengeluaran', rp(T.keluar), s.budget ? `${pctBudget.toFixed(1)}% dari anggaran` : `${state.finance.filter(f => f.type === 'out').length} transaksi`, 'arrowUp', 'bg-red-100 text-red-700',
+      s.budget ? `<div class="mt-2 h-1.5 bg-slate-100 rounded-full overflow-hidden"><div class="h-full rounded-full ${pctBudget > 100 ? 'bg-red-500' : 'bg-red-400'}" style="width:${Math.min(100, pctBudget)}%"></div></div>` : '')}
+    ${statCard('Sisa Saldo', `<span class="${T.saldo < 0 ? 'text-red-600' : ''}">${rpSigned(T.saldo)}</span>`, T.saldo < 0 ? 'Saldo minus! Perlu tambahan dana' : 'Dana masuk − pengeluaran', 'wallet', 'bg-brand-100 text-brand-700')}
+    ${statCard('Progress Proyek', P.overall.toFixed(1) + '%', `Hari ke-${durasi}${sisaHari !== null ? ` • ${sisaHari >= 0 ? sisaHari + ' hari lagi' : 'lewat ' + -sisaHari + ' hari'}` : ''}`, 'chart', 'bg-navy text-brand',
+      `<div class="mt-2 h-1.5 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-brand rounded-full" style="width:${P.overall}%"></div></div>`)}
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
+    <div class="card p-4 sm:p-5 lg:col-span-2">
+      <div class="flex items-center justify-between mb-4"><h3 class="font-bold text-navy">Progress per Tahap</h3><button data-act="tab" data-id="progress" class="text-xs font-semibold text-brand-700 hover:underline">Lihat galeri →</button></div>
+      <div class="space-y-3.5">
+        ${P.list.map(t => `<div><div class="flex justify-between text-sm mb-1"><span class="font-medium text-slate-700">${esc(t.key)} <span class="text-[11px] text-slate-400">(bobot ${t.w}%)</span></span><span class="font-bold ${t.pct >= 100 ? 'text-green-600' : 'text-navy'}">${t.pct >= 100 ? '✓ ' : ''}${t.pct}%</span></div>
+          <div class="h-2.5 bg-slate-100 rounded-full overflow-hidden"><div class="h-full rounded-full transition-all" style="width:${t.pct}%;background:${t.bar}"></div></div></div>`).join('')}
+      </div>
+    </div>
+    <div class="card p-4 sm:p-5">
+      <div class="flex items-center justify-between mb-3"><h3 class="font-bold text-navy">Absensi Hari Ini</h3><span class="badge ${todayAtt.length ? 'bg-green-100 text-green-700' : 'bg-slate-200 text-slate-600'}">${todayAtt.length ? 'Sudah absen' : 'Belum absen'}</span></div>
+      ${todayAtt.length ? todayAtt.map(a => `<div class="flex gap-3 items-start mb-3">${thumb(a.photo, 'view-att', a.id, 'w-20 h-20')}
+          <div class="min-w-0"><p class="font-semibold text-navy">${esc(a.mandor)}</p><p class="text-sm"><b class="text-2xl text-brand-600">${a.workers}</b> <span class="text-slate-500">pekerja hadir</span></p><p class="text-xs text-slate-500 mt-1 line-clamp-2">${esc(a.notes)}</p></div></div>`).join('')
+        : `<div class="text-center py-4"><div class="text-slate-400 mb-2 flex justify-center">${icon('helmet', 9)}</div><p class="text-sm text-slate-500 mb-3">Belum ada absensi untuk hari ini.</p><button data-act="add-att" class="btn btn-primary text-sm">${icon('camera', 4)}Isi Absensi</button></div>`}
+      ${lastProg ? `<div class="border-t border-slate-100 mt-3 pt-3"><p class="text-xs font-semibold text-slate-500 mb-2">Update progress terakhir</p>
+        <div class="flex gap-3 items-center">${thumb(lastProg.photo, 'view-prog', lastProg.id, 'w-12 h-12')}<div class="min-w-0"><div>${tahapBadge(lastProg.category)}</div><p class="text-xs text-slate-500 mt-1">${fmtD(lastProg.date)} • ${lastProg.percent}%</p></div></div></div>` : ''}
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
+    <div class="card p-4 sm:p-5 lg:col-span-2">
+      <div class="flex items-center justify-between mb-2"><h3 class="font-bold text-navy">Pengeluaran Terakhir</h3><button data-act="tab" data-id="keuangan" class="text-xs font-semibold text-brand-700 hover:underline">Semua transaksi →</button></div>
+      ${lastOut.length ? `<div class="divide-y divide-slate-100">${lastOut.map(f => `
+        <button data-act="detail-fin" data-id="${f.id}" class="w-full flex items-center gap-3 py-3 text-left hover:bg-slate-50 -mx-2 px-2 rounded-lg">
+          <span class="w-10 h-10 rounded-xl ${f.photo ? 'bg-brand-100 text-brand-700' : 'bg-slate-100 text-slate-400'} flex items-center justify-center shrink-0">${icon('receipt')}</span>
+          <span class="min-w-0 flex-1"><span class="block font-semibold text-sm text-navy truncate">${esc(f.desc || f.category)}</span><span class="block text-xs text-slate-500 truncate">${fmtD(f.date)} • ${esc(f.party)}</span></span>
+          <span class="font-bold text-sm text-red-600 whitespace-nowrap">−${rp(f.amount).replace('Rp ', 'Rp ')}</span></button>`).join('')}</div>`
+        : `<p class="text-sm text-slate-500 py-6 text-center">Belum ada pengeluaran.</p>`}
+    </div>
+    <div class="card p-4 sm:p-5">
+      <h3 class="font-bold text-navy mb-4">Pengeluaran per Kategori</h3>
+      <div class="space-y-3">${KAT_OUT.map(k => { const v = T.perKat[k] || 0; return `<div><div class="flex justify-between text-xs mb-1"><span class="font-medium text-slate-600">${k}</span><span class="font-bold text-navy">${rp(v)}</span></div>
+        <div class="h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:${v / katMax * 100}%;background:${KAT_BAR[k]}"></div></div>
+        <p class="text-[10px] text-slate-400 mt-0.5">${T.keluar ? (v / T.keluar * 100).toFixed(1) : 0}% dari total pengeluaran</p></div>`; }).join('')}</div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-3 gap-3 mt-4 md:hidden">
+    <button data-act="add-att" class="card p-3 flex flex-col items-center gap-1 text-xs font-semibold text-navy">${icon('users', 6, 'text-brand-600')}Absensi</button>
+    <button data-act="add-prog" class="card p-3 flex flex-col items-center gap-1 text-xs font-semibold text-navy">${icon('camera', 6, 'text-brand-600')}Progress</button>
+    <button data-act="add-fin" class="card p-3 flex flex-col items-center gap-1 text-xs font-semibold text-navy">${icon('receipt', 6, 'text-brand-600')}Transaksi</button>
+  </div>
+  <button data-act="print" class="sm:hidden btn btn-navy w-full mt-3">${icon('printer', 4)}Cetak / Simpan Laporan PDF</button>`;
+}
+
+/* =========================================================
+   Render: Absensi
+   ========================================================= */
+let attSearch = '';
+function renderAbsensi() {
+  const all = [...state.attendance].sort(byDateDesc);
+  const q = attSearch.toLowerCase();
+  const list = all.filter(a => !q || (a.mandor + ' ' + a.notes + ' ' + a.date).toLowerCase().includes(q));
+  const totalHO = all.reduce((s, a) => s + (+a.workers || 0), 0);
+  const el = $('#tab-absensi');
+  el.innerHTML = `
+  ${sectionHead('Absensi Mandor & Pekerja', 'Catatan kehadiran harian beserta foto bukti di lokasi', 'add-att', 'Isi Absensi')}
+  <div class="grid grid-cols-3 gap-3 mb-4">
+    <div class="card p-3 sm:p-4"><p class="text-[11px] sm:text-xs text-slate-500 font-semibold">Hari Kerja Tercatat</p><p class="text-xl sm:text-2xl font-extrabold text-navy">${all.length}</p></div>
+    <div class="card p-3 sm:p-4"><p class="text-[11px] sm:text-xs text-slate-500 font-semibold">Total Hari-Orang</p><p class="text-xl sm:text-2xl font-extrabold text-navy">${totalHO}</p></div>
+    <div class="card p-3 sm:p-4"><p class="text-[11px] sm:text-xs text-slate-500 font-semibold">Rata-rata Pekerja</p><p class="text-xl sm:text-2xl font-extrabold text-navy">${all.length ? (totalHO / all.length).toFixed(1) : 0}</p></div>
+  </div>
+  ${all.length ? `<div class="mb-3"><input id="att-search" class="inp" placeholder="Cari nama mandor / catatan pekerjaan…" value="${esc(attSearch)}"></div>
+  <div class="card overflow-hidden">
+    <div class="hidden md:block overflow-x-auto"><table class="w-full text-sm">
+      <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide"><tr><th class="px-4 py-3 text-left">Foto</th><th class="px-4 py-3 text-left">Tanggal</th><th class="px-4 py-3 text-left">Mandor / Tukang</th><th class="px-4 py-3 text-center">Pekerja</th><th class="px-4 py-3 text-left">Catatan Pekerjaan</th><th class="px-4 py-3 text-right">Aksi</th></tr></thead>
+      <tbody class="divide-y divide-slate-100">${list.map(a => `<tr class="hover:bg-slate-50">
+        <td class="px-4 py-2.5">${thumb(a.photo, 'view-att', a.id)}</td>
+        <td class="px-4 py-2.5 whitespace-nowrap"><p class="font-semibold text-navy">${fmtD(a.date)}</p><p class="text-xs text-slate-500">${fmtD(a.date, {weekday:'long'})}${a.date === today() ? ' • <span class="text-green-600 font-semibold">Hari ini</span>' : ''}</p></td>
+        <td class="px-4 py-2.5 font-medium">${esc(a.mandor)}</td>
+        <td class="px-4 py-2.5 text-center"><span class="badge bg-navy text-white text-xs px-2.5">${a.workers} org</span></td>
+        <td class="px-4 py-2.5 text-slate-600 max-w-xs">${esc(a.notes) || '<span class="text-slate-400">-</span>'}</td>
+        <td class="px-4 py-2.5 text-right whitespace-nowrap"><button data-act="edit-att" data-id="${a.id}" class="icon-btn" title="Edit">${icon('edit', 4)}</button><button data-act="del-att" data-id="${a.id}" class="icon-btn hover:!text-red-600" title="Hapus">${icon('trash', 4)}</button></td></tr>`).join('')}</tbody></table></div>
+    <div class="md:hidden divide-y divide-slate-100">${list.map(a => `<div class="p-3 flex gap-3">
+        ${thumb(a.photo, 'view-att', a.id, 'w-20 h-20')}
+        <div class="min-w-0 flex-1"><div class="flex items-start justify-between gap-2"><div><p class="font-bold text-navy text-sm">${fmtD(a.date, {weekday:'short', day:'numeric', month:'short', year:'numeric'})}</p><p class="text-xs text-slate-500">${esc(a.mandor)}</p></div><span class="badge bg-navy text-white">${a.workers} org</span></div>
+          <p class="text-xs text-slate-600 mt-1 line-clamp-2">${esc(a.notes)}</p>
+          <div class="flex gap-1 mt-1 -ml-2"><button data-act="edit-att" data-id="${a.id}" class="icon-btn w-8 h-8">${icon('edit', 4)}</button><button data-act="del-att" data-id="${a.id}" class="icon-btn w-8 h-8">${icon('trash', 4)}</button></div></div></div>`).join('')}</div>
+    ${list.length ? '' : '<p class="p-6 text-center text-sm text-slate-500">Tidak ada yang cocok dengan pencarian.</p>'}
+  </div>` : emptyBox('users', 'Belum ada absensi', 'Catat kehadiran mandor & pekerja setiap hari beserta fotonya.', 'add-att', 'Isi Absensi Pertama')}`;
+  const si = $('#att-search'); if (si) si.addEventListener('input', e => { attSearch = e.target.value; const pos = e.target.selectionStart; renderAbsensi(); const n = $('#att-search'); n.focus(); n.setSelectionRange(pos, pos); });
+}
+
+/* =========================================================
+   Render: Galeri Progress
+   ========================================================= */
+let progFilter = 'Semua';
+function filteredProgress() { return [...state.progress].sort(byDateDesc).filter(p => progFilter === 'Semua' || p.category === progFilter); }
+function renderProgress() {
+  const P = tahapProgress();
+  const list = filteredProgress();
+  const count = k => state.progress.filter(p => k === 'Semua' || p.category === k).length;
+  $('#tab-progress').innerHTML = `
+  ${sectionHead('Galeri Progress Proyek', `Progress keseluruhan <b class="text-navy">${P.overall.toFixed(1)}%</b> — dihitung dari bobot tiap tahap`, 'add-prog', 'Upload Progress')}
+  <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2 mb-3 -mx-4 px-4">
+    ${['Semua', ...TAHAP.map(t => t.key)].map(k => `<button data-act="prog-filter" data-id="${esc(k)}" class="chip ${progFilter === k ? 'active' : ''}">${esc(k)}<span class="text-[10px] opacity-70">${count(k)}</span></button>`).join('')}
+  </div>
+  ${progFilter !== 'Semua' ? (() => { const t = P.list.find(x => x.key === progFilter); return `<div class="card p-4 mb-4 flex items-center gap-4"><div class="flex-1"><p class="text-xs text-slate-500 font-semibold">Progress tahap ${esc(t.key)}</p><div class="h-2.5 bg-slate-100 rounded-full overflow-hidden mt-2"><div class="h-full rounded-full" style="width:${t.pct}%;background:${t.bar}"></div></div></div><p class="text-2xl font-extrabold text-navy">${t.pct}%</p></div>`; })() : ''}
+  ${list.length ? `<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">${list.map((p, i) => `
+    <div class="card overflow-hidden group flex flex-col">
+      <button data-act="lb-prog" data-i="${i}" class="relative aspect-[4/3] bg-slate-200 overflow-hidden">
+        ${photoSrc(p.photo) ? `<img src="${photoSrc(p.photo)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" loading="lazy" alt="">` : `<div class="w-full h-full flex items-center justify-center text-slate-400">${icon('image', 8)}</div>`}
+        <span class="absolute top-2 right-2 badge bg-navy/85 text-white">${p.percent}%</span>
+      </button>
+      <div class="p-3 flex-1 flex flex-col">
+        <div class="mb-1">${tahapBadge(p.category)}</div>
+        <p class="text-xs text-slate-500">${fmtD(p.date)}</p>
+        <p class="text-xs sm:text-sm text-slate-700 mt-1 line-clamp-3 flex-1">${esc(p.desc)}</p>
+        <div class="flex justify-end -mr-1 mt-1"><button data-act="edit-progress" data-id="${p.id}" class="icon-btn w-8 h-8" title="Edit">${icon('edit', 4)}</button><button data-act="del-progress" data-id="${p.id}" class="icon-btn w-8 h-8" title="Hapus">${icon('trash', 4)}</button></div>
+      </div>
+    </div>`).join('')}</div>`
+  : emptyBox('camera', progFilter === 'Semua' ? 'Belum ada foto progress' : 'Belum ada foto untuk tahap ini', 'Upload foto perkembangan pembangunan untuk memantau proyek secara visual.', 'add-prog', 'Upload Progress')}`;
+}
+
+/* =========================================================
+   Render: Keuangan
+   ========================================================= */
+const finFilter = { type: 'all', cat: 'all', q: '' };
+function renderKeuangan() {
+  const T = totals();
+  const list = [...state.finance].sort(byDateDesc).filter(f =>
+    (finFilter.type === 'all' || f.type === finFilter.type) && (finFilter.cat === 'all' || f.category === finFilter.cat) &&
+    (!finFilter.q || (f.party + ' ' + f.desc + ' ' + f.category).toLowerCase().includes(finFilter.q.toLowerCase())));
+  const sum = list.reduce((s, f) => s + (f.type === 'in' ? 1 : -1) * f.amount, 0);
+  const notaBadge = f => f.photo ? `<button data-act="view-nota" data-id="${f.id}" class="badge bg-brand-100 text-brand-700 hover:bg-brand-200">${icon('receipt', 3)}Ada Nota</button>` : `<span class="badge bg-slate-100 text-slate-500">Tanpa nota</span>`;
+  $('#tab-keuangan').innerHTML = `
+  ${sectionHead('Keuangan & Bukti Nota', 'Pencatatan pemasukan dan pengeluaran beserta foto nota/kwitansi', 'add-fin', 'Catat Transaksi')}
+  <div class="grid grid-cols-3 gap-2 sm:gap-4 mb-4">
+    <div class="card p-3 sm:p-4 border-l-4 !border-l-green-500"><p class="text-[11px] sm:text-xs font-semibold text-slate-500">Pemasukan</p><p class="text-sm sm:text-xl font-extrabold text-green-700 break-words">${rp(T.masuk)}</p></div>
+    <div class="card p-3 sm:p-4 border-l-4 !border-l-red-500"><p class="text-[11px] sm:text-xs font-semibold text-slate-500">Pengeluaran</p><p class="text-sm sm:text-xl font-extrabold text-red-600 break-words">${rp(T.keluar)}</p></div>
+    <div class="card p-3 sm:p-4 border-l-4 !border-l-amber-500"><p class="text-[11px] sm:text-xs font-semibold text-slate-500">Saldo</p><p class="text-sm sm:text-xl font-extrabold ${T.saldo < 0 ? 'text-red-600' : 'text-navy'} break-words">${rpSigned(T.saldo)}</p></div>
+  </div>
+  ${state.finance.length ? `
+  <div class="card p-3 mb-3 flex flex-col sm:flex-row gap-2">
+    <div class="flex bg-slate-100 rounded-lg p-1 shrink-0">${[['all','Semua'],['in','Masuk'],['out','Keluar']].map(([v, l]) => `<button data-act="fin-type" data-id="${v}" class="flex-1 sm:flex-none px-3 py-1.5 rounded-md text-sm font-semibold ${finFilter.type === v ? 'bg-white shadow text-navy' : 'text-slate-500'}">${l}</button>`).join('')}</div>
+    <select id="fin-cat" class="inp sm:w-56 !py-2"><option value="all">Semua kategori</option>${[...KAT_OUT, ...KAT_IN].map(k => `<option ${finFilter.cat === k ? 'selected' : ''}>${k}</option>`).join('')}</select>
+    <input id="fin-q" class="inp !py-2 flex-1" placeholder="Cari toko / penerima / deskripsi…" value="${esc(finFilter.q)}">
+  </div>
+  <div class="card overflow-hidden">
+    <div class="hidden md:block overflow-x-auto"><table class="w-full text-sm">
+      <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide"><tr><th class="px-4 py-3 text-left">Tanggal</th><th class="px-4 py-3 text-left">Jenis / Kategori</th><th class="px-4 py-3 text-left">Penerima / Toko & Deskripsi</th><th class="px-4 py-3 text-right">Nominal</th><th class="px-4 py-3 text-left">Nota</th><th class="px-4 py-3 text-right">Aksi</th></tr></thead>
+      <tbody class="divide-y divide-slate-100">${list.map(f => `<tr class="hover:bg-slate-50">
+        <td class="px-4 py-3 whitespace-nowrap font-medium text-navy">${fmtD(f.date)}</td>
+        <td class="px-4 py-3"><div class="flex flex-col items-start gap-1">${typeBadge(f.type)}${katBadge(f.category)}</div></td>
+        <td class="px-4 py-3 max-w-sm"><p class="font-semibold text-navy">${esc(f.party)}</p><p class="text-xs text-slate-500">${esc(f.desc)}</p></td>
+        <td class="px-4 py-3 text-right font-bold whitespace-nowrap ${f.type === 'in' ? 'text-green-700' : 'text-red-600'}">${f.type === 'in' ? '+' : '−'}${rp(f.amount)}</td>
+        <td class="px-4 py-3">${f.photo ? `<div class="flex items-center gap-2">${thumb(f.photo, 'view-nota', f.id, 'w-10 h-10')}${notaBadge(f)}</div>` : notaBadge(f)}</td>
+        <td class="px-4 py-3 text-right whitespace-nowrap"><button data-act="detail-fin" data-id="${f.id}" class="icon-btn" title="Detail">${icon('eye', 4)}</button><button data-act="del-fin" data-id="${f.id}" class="icon-btn hover:!text-red-600" title="Hapus">${icon('trash', 4)}</button></td></tr>`).join('')}</tbody>
+      ${list.length ? `<tfoot class="bg-slate-50 font-bold"><tr><td colspan="3" class="px-4 py-3 text-right text-slate-500">Total ${list.length} transaksi (sesuai filter)</td><td class="px-4 py-3 text-right whitespace-nowrap ${sum < 0 ? 'text-red-600' : 'text-green-700'}">${rpSigned(sum)}</td><td colspan="2"></td></tr></tfoot>` : ''}
+    </table></div>
+    <div class="md:hidden divide-y divide-slate-100">${list.map(f => `<div class="p-3 flex gap-3 items-start">
+        ${f.photo ? thumb(f.photo, 'view-nota', f.id, 'w-12 h-12') : `<span class="w-12 h-12 rounded-lg ${f.type === 'in' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-400'} flex items-center justify-center shrink-0">${icon(f.type === 'in' ? 'arrowDown' : 'receipt')}</span>`}
+        <button data-act="detail-fin" data-id="${f.id}" class="min-w-0 flex-1 text-left">
+          <div class="flex justify-between gap-2"><p class="font-semibold text-sm text-navy truncate">${esc(f.party)}</p><p class="font-bold text-sm whitespace-nowrap ${f.type === 'in' ? 'text-green-700' : 'text-red-600'}">${f.type === 'in' ? '+' : '−'}${rp(f.amount)}</p></div>
+          <p class="text-xs text-slate-500 truncate">${esc(f.desc)}</p>
+          <div class="flex flex-wrap items-center gap-1 mt-1.5"><span class="text-[11px] text-slate-500 mr-1">${fmtD(f.date)}</span>${katBadge(f.category)}${f.photo ? '' : '<span class="badge bg-slate-100 text-slate-500">Tanpa nota</span>'}</div>
+        </button></div>`).join('')}
+      ${list.length ? `<div class="p-3 bg-slate-50 flex justify-between text-sm font-bold"><span class="text-slate-500">${list.length} transaksi</span><span class="${sum < 0 ? 'text-red-600' : 'text-green-700'}">${rpSigned(sum)}</span></div>` : ''}</div>
+    ${list.length ? '' : '<p class="p-6 text-center text-sm text-slate-500">Tidak ada transaksi yang cocok dengan filter.</p>'}
+  </div>` : emptyBox('wallet', 'Belum ada transaksi', 'Catat dana masuk dan setiap pengeluaran beserta foto notanya.', 'add-fin', 'Catat Transaksi Pertama')}`;
+  const c = $('#fin-cat'); if (c) c.addEventListener('change', e => { finFilter.cat = e.target.value; renderKeuangan(); });
+  const q = $('#fin-q'); if (q) q.addEventListener('input', e => { finFilter.q = e.target.value; const pos = e.target.selectionStart; renderKeuangan(); const n = $('#fin-q'); n.focus(); n.setSelectionRange(pos, pos); });
+}
+
+function renderAll() { renderHeader(); renderDashboard(); renderAbsensi(); renderProgress(); renderKeuangan(); }
+
+/* =========================================================
+   Form: komponen foto
+   ========================================================= */
+let formPhoto = { ref: null, data: null, changed: false };
+function photoField(label, ref, hint) {
+  formPhoto = { ref, data: null, changed: false };
+  const src = photoSrc(ref);
+  return `<div><span class="lbl">${label}</span>
+    <label for="photo-input" class="block cursor-pointer rounded-xl border-2 border-dashed border-slate-300 hover:border-brand bg-slate-50 overflow-hidden transition">
+      <img id="photo-preview" src="${src}" class="${src ? '' : 'hidden'} w-full max-h-64 object-contain bg-slate-900" alt="">
+      <div id="photo-empty" class="${src ? 'hidden' : ''} py-7 flex flex-col items-center text-slate-500 text-sm">
+        <span class="w-12 h-12 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center mb-2">${icon('camera', 6)}</span>
+        <b class="text-navy">Ketuk untuk ambil foto / pilih dari galeri</b><span class="text-xs mt-0.5">${hint}</span></div>
+    </label>
+    <input type="file" id="photo-input" accept="image/*" class="hidden">
+    <div class="flex justify-between items-center mt-1.5"><span id="photo-status" class="text-xs text-slate-500"></span>
+      <button type="button" id="photo-remove" class="${src ? '' : 'hidden'} text-xs font-semibold text-red-600 hover:underline">Hapus foto</button></div></div>`;
+}
+function bindPhotoField() {
+  const inp = $('#photo-input'), prev = $('#photo-preview'), empty = $('#photo-empty'), rm = $('#photo-remove'), st = $('#photo-status');
+  inp.addEventListener('change', async () => {
+    const f = inp.files[0]; if (!f) return;
+    st.textContent = 'Memproses foto…';
+    try {
+      const data = await compressImage(f);
+      formPhoto.data = data; formPhoto.changed = true;
+      prev.src = data; prev.classList.remove('hidden'); empty.classList.add('hidden'); rm.classList.remove('hidden');
+      st.textContent = `Foto siap (${Math.round(data.length * 0.75 / 1024)} KB, sudah dikompres)`;
+    } catch (e) { st.textContent = ''; toast(e.message, 'error'); }
+    inp.value = '';
+  });
+  rm.addEventListener('click', () => {
+    formPhoto.data = null; formPhoto.changed = true;
+    prev.src = ''; prev.classList.add('hidden'); empty.classList.remove('hidden'); rm.classList.add('hidden'); st.textContent = 'Foto akan dihapus saat disimpan';
+  });
+}
+async function resolvePhoto() {
+  if (!formPhoto.changed) return formPhoto.ref;
+  await removePhoto(formPhoto.ref);
+  return formPhoto.data ? await storePhoto(formPhoto.data) : null;
+}
+const formBtns = label => `<div class="flex gap-2 pt-2 sticky bottom-0 bg-white pb-1"><button type="button" data-act="close-modal" class="btn btn-ghost flex-1 sm:flex-none">Batal</button><button type="submit" class="btn btn-primary flex-1">${label}</button></div>`;
+function lockSubmit(form) { const b = form.querySelector('[type=submit]'); b.disabled = true; b.innerHTML = 'Menyimpan…'; }
+
+/* ---------- Form Absensi ---------- */
+function openAttForm(id) {
+  const a = state.attendance.find(x => x.id === id) || { date: today(), mandor: state.settings.mandor || '', workers: '', notes: '', photo: null };
+  const mandors = [...new Set(state.attendance.map(x => x.mandor).filter(Boolean))];
+  openModal(id ? 'Edit Absensi' : 'Absensi Harian', `<form id="f-att" class="space-y-4">
+    <div class="grid grid-cols-2 gap-3">
+      <div><label class="lbl">Tanggal *</label><input type="date" name="date" class="inp" required value="${a.date}"></div>
+      <div><label class="lbl">Jumlah Pekerja Hadir *</label><input type="number" name="workers" class="inp" required min="0" max="500" inputmode="numeric" value="${a.workers}" placeholder="cth. 6"></div>
+    </div>
+    <div><label class="lbl">Nama Mandor / Tukang *</label><input name="mandor" class="inp" required list="mandor-list" value="${esc(a.mandor)}" placeholder="cth. Pak Darto"><datalist id="mandor-list">${mandors.map(m => `<option value="${esc(m)}">`).join('')}</datalist></div>
+    <div><label class="lbl">Catatan Pekerjaan Hari Ini</label><textarea name="notes" class="inp" placeholder="cth. Pasang bata dinding kamar belakang, cor kolom praktis…">${esc(a.notes)}</textarea></div>
+    ${photoField('Foto Absensi (bukti kehadiran)', a.photo, 'Foto bersama / selfie mandor & tim di lokasi proyek')}
+    ${formBtns(id ? 'Simpan Perubahan' : 'Simpan Absensi')}</form>`);
+  bindPhotoField();
+  $('#f-att').addEventListener('submit', async e => {
+    e.preventDefault(); const fd = new FormData(e.target); lockSubmit(e.target);
+    const rec = { ...a, id: a.id || uid(), createdAt: a.createdAt || Date.now(), date: fd.get('date'), mandor: fd.get('mandor').trim(), workers: +fd.get('workers'), notes: fd.get('notes').trim() };
+    rec.photo = await resolvePhoto();
+    if (id) state.attendance = state.attendance.map(x => x.id === id ? rec : x); else state.attendance.push(rec);
+    if (!state.settings.mandor) state.settings.mandor = rec.mandor;
+    save(); closeModal(); renderAll(); toast(id ? 'Absensi diperbarui' : 'Absensi tersimpan');
+  });
+}
+
+/* ---------- Form Progress ---------- */
+function openProgForm(id) {
+  const P = tahapProgress();
+  const defCat = progFilter !== 'Semua' ? progFilter : (P.list.find(t => t.pct < 100) || TAHAP[0]).key;
+  const p = state.progress.find(x => x.id === id) || { date: today(), category: defCat, percent: P.list.find(t => t.key === defCat).pct, desc: '', photo: null };
+  openModal(id ? 'Edit Progress' : 'Upload Progress', `<form id="f-prog" class="space-y-4">
+    <div class="grid grid-cols-2 gap-3">
+      <div><label class="lbl">Tanggal *</label><input type="date" name="date" class="inp" required value="${p.date}"></div>
+      <div><label class="lbl">Kategori Struktur *</label><select name="category" id="prog-cat" class="inp" required>${TAHAP.map(t => `<option ${t.key === p.category ? 'selected' : ''}>${t.key}</option>`).join('')}</select></div>
+    </div>
+    <div><label class="lbl">Progress tahap ini: <span id="pct-val" class="text-brand-700 text-base">${p.percent}%</span></label>
+      <input type="range" name="percent" id="prog-pct" min="0" max="100" step="5" value="${p.percent}" class="w-full">
+      <p class="text-[11px] text-slate-500">Persentase terakhir tiap tahap dipakai untuk menghitung progress keseluruhan proyek.</p></div>
+    <div><label class="lbl">Deskripsi *</label><textarea name="desc" class="inp" required placeholder="cth. Fondasi batu kali sisi timur selesai, lanjut sloof…">${esc(p.desc)}</textarea></div>
+    ${photoField('Foto Progress', p.photo, 'Ambil dari sudut yang sama tiap kali agar perkembangan mudah dibandingkan')}
+    ${formBtns(id ? 'Simpan Perubahan' : 'Simpan Progress')}</form>`);
+  bindPhotoField();
+  const pct = $('#prog-pct'); pct.addEventListener('input', () => $('#pct-val').textContent = pct.value + '%');
+  if (!id) $('#prog-cat').addEventListener('change', e => { const v = tahapProgress().list.find(t => t.key === e.target.value).pct; pct.value = v; $('#pct-val').textContent = v + '%'; });
+  $('#f-prog').addEventListener('submit', async e => {
+    e.preventDefault(); const fd = new FormData(e.target); lockSubmit(e.target);
+    const rec = { ...p, id: p.id || uid(), createdAt: p.createdAt || Date.now(), date: fd.get('date'), category: fd.get('category'), percent: +fd.get('percent'), desc: fd.get('desc').trim() };
+    rec.photo = await resolvePhoto();
+    if (id) state.progress = state.progress.map(x => x.id === id ? rec : x); else state.progress.push(rec);
+    save(); closeModal(); closeLightbox(); renderAll(); toast(id ? 'Progress diperbarui' : 'Progress tersimpan');
+  });
+}
+
+/* ---------- Form Keuangan ---------- */
+function openFinForm(id, presetType) {
+  const f = state.finance.find(x => x.id === id) || { date: today(), type: presetType || 'out', category: 'Material', amount: '', party: '', desc: '', photo: null };
+  const opts = (type, sel) => (type === 'in' ? KAT_IN : KAT_OUT).map(k => `<option ${k === sel ? 'selected' : ''}>${k}</option>`).join('');
+  const parties = [...new Set(state.finance.map(x => x.party).filter(Boolean))];
+  openModal(id ? 'Edit Transaksi' : 'Catat Transaksi', `<form id="f-fin" class="space-y-4">
+    <div class="seg flex bg-slate-100 rounded-xl p-1">
+      <input type="radio" name="type" id="t-out" value="out" ${f.type === 'out' ? 'checked' : ''}><label for="t-out" class="out">↑ Pengeluaran</label>
+      <input type="radio" name="type" id="t-in" value="in" ${f.type === 'in' ? 'checked' : ''}><label for="t-in" class="in">↓ Pemasukan</label>
+    </div>
+    <div class="grid grid-cols-2 gap-3">
+      <div><label class="lbl">Tanggal *</label><input type="date" name="date" class="inp" required value="${f.date}"></div>
+      <div><label class="lbl">Kategori *</label><select name="category" id="fin-cat-sel" class="inp" required>${opts(f.type, f.category)}</select></div>
+    </div>
+    <div><label class="lbl">Nominal (Rp) *</label><div class="relative"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-semibold">Rp</span>
+      <input name="amount" id="amt" class="inp !pl-10 font-bold text-lg" required inputmode="numeric" autocomplete="off" placeholder="0" value="${f.amount ? Number(f.amount).toLocaleString('id-ID') : ''}"></div></div>
+    <div><label class="lbl" id="party-lbl">${f.type === 'in' ? 'Sumber Dana *' : 'Penerima / Toko *'}</label><input name="party" class="inp" required list="party-list" value="${esc(f.party)}" placeholder="cth. TB Sinar Jaya"><datalist id="party-list">${parties.map(m => `<option value="${esc(m)}">`).join('')}</datalist></div>
+    <div><label class="lbl">Deskripsi / Peruntukan Dana *</label><textarea name="desc" class="inp" required placeholder="cth. Semen 50 sak, pasir 2 truk">${esc(f.desc)}</textarea></div>
+    ${photoField('Foto Nota / Kwitansi', f.photo, 'Pastikan angka total & nama toko terbaca jelas')}
+    ${formBtns(id ? 'Simpan Perubahan' : 'Simpan Transaksi')}</form>`);
+  bindPhotoField();
+  const amt = $('#amt');
+  amt.addEventListener('input', () => { const d = amt.value.replace(/\D/g, ''); amt.value = d ? Number(d).toLocaleString('id-ID') : ''; });
+  document.querySelectorAll('#f-fin [name=type]').forEach(r => r.addEventListener('change', () => {
+    $('#fin-cat-sel').innerHTML = opts(r.value, ''); $('#party-lbl').textContent = r.value === 'in' ? 'Sumber Dana *' : 'Penerima / Toko *';
+  }));
+  $('#f-fin').addEventListener('submit', async e => {
+    e.preventDefault(); const fd = new FormData(e.target);
+    const amount = Number(String(fd.get('amount')).replace(/\D/g, ''));
+    if (!amount) return toast('Nominal harus lebih dari 0', 'error');
+    lockSubmit(e.target);
+    const rec = { ...f, id: f.id || uid(), createdAt: f.createdAt || Date.now(), date: fd.get('date'), type: fd.get('type'), category: fd.get('category'), amount, party: fd.get('party').trim(), desc: fd.get('desc').trim() };
+    rec.photo = await resolvePhoto();
+    if (id) state.finance = state.finance.map(x => x.id === id ? rec : x); else state.finance.push(rec);
+    save(); closeModal(); renderAll(); toast(id ? 'Transaksi diperbarui' : 'Transaksi tersimpan');
+  });
+}
+function openFinDetail(id) {
+  const f = state.finance.find(x => x.id === id); if (!f) return;
+  const src = photoSrc(f.photo);
+  openModal('Detail Transaksi', `<div class="space-y-4">
+    <div class="rounded-xl p-4 ${f.type === 'in' ? 'bg-green-50' : 'bg-red-50'}"><div class="flex items-center gap-2 mb-1">${typeBadge(f.type)}${katBadge(f.category)}</div>
+      <p class="text-3xl font-extrabold ${f.type === 'in' ? 'text-green-700' : 'text-red-600'}">${f.type === 'in' ? '+' : '−'}${rp(f.amount)}</p></div>
+    <dl class="grid grid-cols-3 gap-y-2 text-sm">
+      <dt class="text-slate-500">Tanggal</dt><dd class="col-span-2 font-semibold text-navy">${fmtDLong(f.date)}</dd>
+      <dt class="text-slate-500">${f.type === 'in' ? 'Sumber' : 'Penerima/Toko'}</dt><dd class="col-span-2 font-semibold text-navy">${esc(f.party)}</dd>
+      <dt class="text-slate-500">Peruntukan</dt><dd class="col-span-2 text-slate-700">${esc(f.desc) || '-'}</dd></dl>
+    <div><p class="lbl">Bukti Nota / Kwitansi</p>${src ? `<button data-act="view-nota" data-id="${f.id}" class="block w-full rounded-xl overflow-hidden bg-slate-900"><img src="${src}" class="w-full max-h-80 object-contain" alt="Nota"></button><p class="text-xs text-slate-500 mt-1">Ketuk gambar untuk memperbesar</p>`
+      : `<div class="rounded-xl border-2 border-dashed border-slate-300 p-5 text-center text-sm text-slate-500">Belum ada foto nota. <button data-act="edit-fin" data-id="${f.id}" class="font-semibold text-brand-700 hover:underline">Upload sekarang</button></div>`}</div>
+    <div class="flex gap-2 pt-1"><button data-act="del-fin" data-id="${f.id}" class="btn btn-danger">${icon('trash', 4)}Hapus</button><button data-act="edit-fin" data-id="${f.id}" class="btn btn-navy flex-1">${icon('edit', 4)}Edit</button></div></div>`);
+}
+
+/* ---------- Pengaturan ---------- */
+function openSettings() {
+  const s = state.settings;
+  openModal('Pengaturan Proyek', `<form id="f-set" class="space-y-4">
+    <div><label class="lbl">Nama Proyek *</label><input name="name" class="inp" required value="${esc(s.name)}"></div>
+    <div class="grid sm:grid-cols-2 gap-3">
+      <div><label class="lbl">Pemilik Rumah</label><input name="owner" class="inp" value="${esc(s.owner)}"></div>
+      <div><label class="lbl">Mandor Utama</label><input name="mandor" class="inp" value="${esc(s.mandor)}"></div></div>
+    <div><label class="lbl">Lokasi Proyek</label><input name="location" class="inp" value="${esc(s.location)}"></div>
+    <div><label class="lbl">Total Anggaran (RAB)</label><div class="relative"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-semibold">Rp</span><input name="budget" id="bud" class="inp !pl-10 font-bold" inputmode="numeric" value="${s.budget ? Number(s.budget).toLocaleString('id-ID') : ''}"></div></div>
+    <div class="grid grid-cols-2 gap-3">
+      <div><label class="lbl">Tanggal Mulai</label><input type="date" name="startDate" class="inp" value="${s.startDate || ''}"></div>
+      <div><label class="lbl">Target Selesai</label><input type="date" name="endDate" class="inp" value="${s.endDate || ''}"></div></div>
+    <div class="rounded-xl bg-slate-50 p-3 text-xs text-slate-600"><b>Bobot tahap</b> untuk progress keseluruhan: ${TAHAP.map(t => `${t.key} ${t.w}%`).join(' • ')}</div>
+    ${formBtns('Simpan Pengaturan')}</form>`);
+  const bud = $('#bud'); bud.addEventListener('input', () => { const d = bud.value.replace(/\D/g, ''); bud.value = d ? Number(d).toLocaleString('id-ID') : ''; });
+  $('#f-set').addEventListener('submit', e => {
+    e.preventDefault(); const fd = new FormData(e.target);
+    Object.assign(state.settings, { name: fd.get('name').trim(), owner: fd.get('owner').trim(), mandor: fd.get('mandor').trim(), location: fd.get('location').trim(),
+      budget: Number(String(fd.get('budget')).replace(/\D/g, '')) || 0, startDate: fd.get('startDate'), endDate: fd.get('endDate') });
+    save(); closeModal(); renderAll(); toast('Pengaturan tersimpan');
+  });
+}
+
+/* =========================================================
+   Hapus data
+   ========================================================= */
+function delRecord(coll, id, label) {
+  const r = state[coll].find(x => x.id === id); if (!r) return;
+  confirmDialog('Hapus ' + label + '?', 'Data beserta fotonya akan dihapus permanen dari perangkat ini.', async () => {
+    await removePhoto(r.photo); state[coll] = state[coll].filter(x => x.id !== id);
+    save(); closeModal(); closeLightbox(); renderAll(); toast(label[0].toUpperCase() + label.slice(1) + ' dihapus');
+  });
+}
+
+/* =========================================================
+   Ekspor: cetak, CSV, backup/restore
+   ========================================================= */
+function printReport() {
+  const s = state.settings, T = totals(), P = tahapProgress();
+  const fin = [...state.finance].sort((a, b) => a.date.localeCompare(b.date) || a.createdAt - b.createdAt);
+  let run = 0;
+  const att = [...state.attendance].sort((a, b) => a.date.localeCompare(b.date));
+  const prog = [...state.progress].sort(byDateDesc);
+  $('#print-area').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1e293b;padding-bottom:8px">
+      <div><div style="font-size:20px;font-weight:800;color:#1e293b">${esc(s.name)}</div>
+        <div>Laporan Proyek Konstruksi Rumah</div>
+        <div style="color:#475569">${[s.owner && 'Pemilik: ' + esc(s.owner), s.mandor && 'Mandor: ' + esc(s.mandor), esc(s.location)].filter(Boolean).join(' • ')}</div></div>
+      <div style="text-align:right;color:#475569">Dicetak: ${fmtDLong(today())}<br>Periode: ${fmtD(s.startDate)} – ${s.endDate ? fmtD(s.endDate) + ' (target)' : 'sekarang'}</div></div>
+    <h2>Ringkasan</h2>
+    <table><tr><th>Anggaran (RAB)</th><th>Total Dana Masuk</th><th>Total Pengeluaran</th><th>Sisa Saldo</th><th>Progress Proyek</th></tr>
+      <tr><td class="num">${rp(s.budget)}</td><td class="num">${rp(T.masuk)}</td><td class="num">${rp(T.keluar)}${s.budget ? ` (${(T.keluar / s.budget * 100).toFixed(1)}%)` : ''}</td><td class="num">${rpSigned(T.saldo)}</td><td class="num">${P.overall.toFixed(1)}%</td></tr></table>
+    <div style="display:flex;gap:14px" class="avoid">
+      <table style="flex:1"><tr><th>Tahap</th><th>Bobot</th><th>Progress</th></tr>${P.list.map(t => `<tr><td>${esc(t.key)}</td><td class="num">${t.w}%</td><td class="num">${t.pct}%</td></tr>`).join('')}</table>
+      <table style="flex:1"><tr><th>Kategori Pengeluaran</th><th>Jumlah</th><th>%</th></tr>${KAT_OUT.map(k => `<tr><td>${k}</td><td class="num">${rp(T.perKat[k] || 0)}</td><td class="num">${T.keluar ? ((T.perKat[k] || 0) / T.keluar * 100).toFixed(1) : 0}%</td></tr>`).join('')}</table></div>
+    <h2>Riwayat Keuangan (${fin.length} transaksi)</h2>
+    <table><thead><tr><th>Tanggal</th><th>Jenis</th><th>Kategori</th><th>Penerima/Toko</th><th>Deskripsi</th><th>Masuk</th><th>Keluar</th><th>Saldo</th><th>Nota</th></tr></thead><tbody>
+      ${fin.map(f => { run += (f.type === 'in' ? 1 : -1) * f.amount; return `<tr><td style="white-space:nowrap">${fmtD(f.date)}</td><td>${f.type === 'in' ? 'Masuk' : 'Keluar'}</td><td>${esc(f.category)}</td><td>${esc(f.party)}</td><td>${esc(f.desc)}</td><td class="num">${f.type === 'in' ? rp(f.amount) : ''}</td><td class="num">${f.type === 'out' ? rp(f.amount) : ''}</td><td class="num">${rpSigned(run)}</td><td>${f.photo ? '✓' : '–'}</td></tr>`; }).join('')}
+      <tr style="font-weight:700"><td colspan="5" style="text-align:right">TOTAL</td><td class="num">${rp(T.masuk)}</td><td class="num">${rp(T.keluar)}</td><td class="num">${rpSigned(T.saldo)}</td><td></td></tr></tbody></table>
+    <h2>Riwayat Absensi (${att.length} hari, ${att.reduce((a, b) => a + (+b.workers || 0), 0)} hari-orang)</h2>
+    <table><thead><tr><th>Tanggal</th><th>Mandor/Tukang</th><th>Pekerja</th><th>Catatan Pekerjaan</th><th>Foto</th></tr></thead><tbody>
+      ${att.map(a => `<tr><td style="white-space:nowrap">${fmtD(a.date, {weekday:'short', day:'numeric', month:'short', year:'numeric'})}</td><td>${esc(a.mandor)}</td><td class="num">${a.workers}</td><td>${esc(a.notes)}</td><td>${a.photo ? '✓' : '–'}</td></tr>`).join('')}</tbody></table>
+    <h2>Dokumentasi Progress</h2>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">${prog.map(p => `<div class="avoid" style="border:1px solid #cbd5e1;border-radius:6px;overflow:hidden">
+      ${photoSrc(p.photo) ? `<img src="${photoSrc(p.photo)}" style="width:100%;height:120px;object-fit:cover;display:block">` : ''}
+      <div style="padding:5px 7px"><b>${esc(p.category)} – ${p.percent}%</b><br><span style="color:#64748b">${fmtD(p.date)}</span><br>${esc(p.desc)}</div></div>`).join('')}</div>
+    <div style="margin-top:30px;display:flex;justify-content:space-around;text-align:center" class="avoid">
+      <div>Pemilik Rumah<br><br><br><br>( ${esc(s.owner) || '..................................'} )</div>
+      <div>Mandor<br><br><br><br>( ${esc(s.mandor) || '..................................'} )</div></div>`;
+  const imgs = [...document.querySelectorAll('#print-area img')];
+  Promise.all(imgs.map(i => i.complete ? 1 : new Promise(r => { i.onload = i.onerror = r; }))).then(() => setTimeout(() => window.print(), 100));
+}
+function download(name, content, type) {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([content], { type })); a.download = name;
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+const slug = () => (state.settings.name || 'proyek').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+function exportCSV() {
+  const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+  const rows = [['Tanggal','Jenis','Kategori','Penerima/Toko','Deskripsi','Pemasukan','Pengeluaran','Ada Nota']];
+  [...state.finance].sort((a, b) => a.date.localeCompare(b.date)).forEach(f => rows.push([f.date, f.type === 'in' ? 'Pemasukan' : 'Pengeluaran', f.category, f.party, f.desc, f.type === 'in' ? f.amount : '', f.type === 'out' ? f.amount : '', f.photo ? 'Ya' : 'Tidak']));
+  download(`keuangan-${slug()}-${today()}.csv`, '﻿' + rows.map(r => r.map(q).join(';')).join('\r\n'), 'text/csv;charset=utf-8');
+  toast('File CSV diunduh (bisa dibuka di Excel)');
+}
+async function backup() {
+  const photos = PhotoDB.db ? await PhotoDB.all() : {};
+  download(`backup-${slug()}-${today()}.json`, JSON.stringify({ app: 'proyekRumah', version: 1, exportedAt: new Date().toISOString(), state, photos }), 'application/json');
+  toast('Backup diunduh — simpan file ini di tempat aman');
+}
+async function restore(file) {
+  try {
+    const j = JSON.parse(await file.text());
+    if (j.app !== 'proyekRumah' || !j.state) throw new Error('File bukan backup aplikasi ini');
+    confirmDialog('Pulihkan backup?', `Data saat ini akan diganti dengan backup tanggal ${new Date(j.exportedAt).toLocaleString('id-ID')}.`, async () => {
+      if (PhotoDB.db) { await PhotoDB.clear(); for (const k in photoCache) delete photoCache[k]; for (const [k, v] of Object.entries(j.photos || {})) { await PhotoDB.put(k, v); photoCache[k] = v; } }
+      state = j.state; save(); renderAll(); toast('Backup berhasil dipulihkan');
+    }, 'Pulihkan');
+  } catch (e) { toast(e.message || 'File backup tidak valid', 'error'); }
+}
+async function resetTo(newState, msg) {
+  if (PhotoDB.db) { try { await PhotoDB.clear(); } catch {} }
+  for (const k in photoCache) delete photoCache[k];
+  state = newState; save(); renderAll(); toast(msg);
+}
+
+/* =========================================================
+   Event delegation
+   ========================================================= */
+const ACTIONS = {
+  tab: el => showTab(el.dataset.id),
+  menu: () => $('#menu').classList.toggle('hidden'),
+  settings: openSettings,
+  print: printReport, csv: exportCSV, backup,
+  restore: () => $('#restore-input').click(),
+  'load-demo': () => confirmDialog('Muat data contoh?', 'Semua data saat ini akan diganti dengan data contoh. Lakukan backup dulu bila perlu.', () => resetTo(buildMock(), 'Data contoh dimuat'), 'Muat'),
+  wipe: () => confirmDialog('Hapus semua data?', 'Semua absensi, progress, transaksi dan foto akan dihapus permanen dari perangkat ini.', () => resetTo(emptyState(), 'Semua data dihapus'), 'Hapus Semua'),
+  'start-fresh': () => confirmDialog('Mulai proyek baru?', 'Data contoh akan dikosongkan, lalu Anda bisa mengisi pengaturan proyek sendiri.', async () => { await resetTo(emptyState(), 'Data contoh dikosongkan'); openSettings(); }, 'Kosongkan'),
+  fab: () => ({ absensi: openAttForm, progress: openProgForm, keuangan: openFinForm })[currentTab]?.(),
+  'add-att': () => openAttForm(), 'edit-att': el => { closeModal(); openAttForm(el.dataset.id); }, 'del-att': el => delRecord('attendance', el.dataset.id, 'absensi'),
+  'add-prog': () => openProgForm(), 'edit-progress': el => { closeLightbox(); openProgForm(el.dataset.id); }, 'del-progress': el => delRecord('progress', el.dataset.id, 'progress'),
+  'add-fin': () => openFinForm(), 'edit-fin': el => { closeModal(); openFinForm(el.dataset.id); }, 'del-fin': el => delRecord('finance', el.dataset.id, 'transaksi'),
+  'detail-fin': el => openFinDetail(el.dataset.id),
+  'prog-filter': el => { progFilter = el.dataset.id; renderProgress(); },
+  'fin-type': el => { finFilter.type = el.dataset.id; renderKeuangan(); },
+  'view-att': el => { const a = state.attendance.find(x => x.id === el.dataset.id); openLightbox([{ src: photoSrc(a.photo), caption: `<p class="font-bold">Absensi ${fmtDLong(a.date)}</p><p class="text-slate-300">${esc(a.mandor)} • ${a.workers} pekerja hadir</p><p class="text-slate-400 text-xs mt-1">${esc(a.notes)}</p>` }]); },
+  'view-nota': el => { const f = state.finance.find(x => x.id === el.dataset.id); openLightbox([{ src: photoSrc(f.photo), caption: `<p class="font-bold">${esc(f.party)} — ${rp(f.amount)}</p><p class="text-slate-300">${fmtDLong(f.date)} • ${esc(f.category)}</p><p class="text-slate-400 text-xs mt-1">${esc(f.desc)}</p>` }]); },
+  'view-prog': el => { progFilter = 'Semua'; const i = filteredProgress().findIndex(p => p.id === el.dataset.id); openProgLightbox(i); },
+  'lb-prog': el => openProgLightbox(+el.dataset.i),
+  'lb-close': closeLightbox, 'lb-prev': () => lbStep(-1), 'lb-next': () => lbStep(1),
+  'close-modal': closeModal,
+  'confirm-no': () => { $('#confirm').classList.add('hidden'); confirmCb = null; },
+  'confirm-yes': () => { $('#confirm').classList.add('hidden'); const cb = confirmCb; confirmCb = null; cb && cb(); },
+};
+function openProgLightbox(i) {
+  const items = filteredProgress().filter(p => photoSrc(p.photo));
+  const all = filteredProgress(); const target = all[i];
+  const idx = Math.max(0, items.findIndex(p => p === target));
+  if (!items.length) return toast('Belum ada foto untuk ditampilkan', 'error');
+  openLightbox(items.map(p => ({ src: photoSrc(p.photo), progressId: p.id,
+    caption: `<div class="flex items-center gap-2 mb-1">${tahapBadge(p.category)}<span class="badge bg-brand text-navy">${p.percent}%</span><span class="text-slate-400 text-xs">${fmtDLong(p.date)}</span></div><p class="text-slate-200">${esc(p.desc)}</p>` })), idx);
+}
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (!e.target.closest('#menu') && !e.target.closest('[data-act=menu]')) $('#menu').classList.add('hidden');
+  if (!el) return;
+  const fn = ACTIONS[el.dataset.act]; if (!fn) return;
+  e.preventDefault(); if (el.closest('#menu')) $('#menu').classList.add('hidden');
+  fn(el);
+});
+document.addEventListener('keydown', e => {
+  if (!$('#lightbox').classList.contains('hidden')) {
+    if (e.key === 'Escape') closeLightbox(); if (e.key === 'ArrowLeft') lbStep(-1); if (e.key === 'ArrowRight') lbStep(1); return;
+  }
+  if (e.key === 'Escape') { if (!$('#confirm').classList.contains('hidden')) ACTIONS['confirm-no'](); else closeModal(); }
+});
+(() => { // swipe di lightbox
+  let x0 = null; const st = $('#lb-stage');
+  st.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
+  st.addEventListener('touchend', e => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 50) lbStep(dx < 0 ? 1 : -1); x0 = null; });
+})();
+$('#restore-input').addEventListener('change', e => { const f = e.target.files[0]; if (f) restore(f); e.target.value = ''; });
+document.querySelectorAll('.menu-item').forEach(b => b.className = 'menu-item w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium hover:bg-slate-50 text-left ' + (b.classList.contains('text-red-600') ? 'text-red-600' : ''));
+window.addEventListener('hashchange', () => showTab(location.hash.slice(1)));
+
+/* =========================================================
+   Init
+   ========================================================= */
+(async function init() {
+  hydrateIcons();
+  await PhotoDB.open();
+  if (PhotoDB.db) { try { Object.assign(photoCache, await PhotoDB.all()); } catch {} }
+  state = load();
+  if (!state) { state = buildMock(); save(); }
+  renderAll();
+  showTab(location.hash.slice(1) || 'dashboard');
+})();
+</script>
+</body>
+</html>
